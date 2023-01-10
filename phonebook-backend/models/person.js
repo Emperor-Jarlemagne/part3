@@ -3,7 +3,10 @@ const mongoose = require('mongoose')
 
 const url = process.env.MONGODB_URI
 
+mongoose.set('useFindAndModify', false)
+
 console.log('connecting to', url)
+
 mongoose.connect(url)
     .then(result => {
         console.log('Connectd to MONGO DB')
@@ -13,12 +16,11 @@ mongoose.connect(url)
     })
 
 const personSchema = new mongoose.Schema({
-    id: Int16Array,
     name: String,
-    number: Int16Array
+    number: String
 })
 
-noteSchema.set('toJSON', {
+personSchema.set('toJSON', {
     transform: (document, returnedObject) => {
         returnedObject.id = returnedObject._id.toString()
         delete returnedObject._id

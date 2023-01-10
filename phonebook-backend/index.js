@@ -1,11 +1,11 @@
-
+require('dotenv').config()
 
 const express = require('express')
 const app = express()
+const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
-const Person = require('./models/Persons')
-require('dotenv').config()
+const Person = require('./models/person')
 
 const requestLogger = (request, response, next) => {
     console.log('Method', request.method)
@@ -44,6 +44,8 @@ app.use(requestLogger)
 
 app.use(express.static('build'))
 
+app.use(bodyParser.json())
+
 morgan.token('body', (request) => { 
     return JSON.stringify(request.body) 
 })
@@ -54,25 +56,22 @@ app.use(morgan(
 
 app.use(cors())
 
-app.get('/', (request, response) => {
-    response.send('<h1>Phonebook</h1>')
+app.get('/info', (request, response, next) => {
+    Person.countDocuments({}).then(result => {
+        const message = `<h1>Phonebook has info for ${result} people</h1></br><p>${new Date()}</p>`
+        response.send(message).end()
+    })
+    .catch(error => next(error))
 })
-
-app.get('/info', (request, response) => {
-    response.send(
-        `<h1>Phonebook has info for ${persons.length} people</h1></br><p>${new Date()}</p>`
-    )
-})
-
-
+/*
 const generateId = () => {
-    const maxId = persons.length > 0
-    ? Math.max(...persons.map(p => p.id))
+    const maxId = people.length > 0
+    ? Math.max(...people.map(p => p.id))
     : 0
     return maxId + 1
 }
-
-app.post('/api/persons', (request, response) => {
+*/
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
     
     if(!body.name || !body.number) {
@@ -86,42 +85,71 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    const person = {
-        id: generateId(),
+    const person = new Person({
+//        id: generateId(),
         name: body.name,
         number: body.number,
         //important: body.important || false,
-    }
-    person.save().then(savedPerson => {
-        response.json(savedPerson)
     })
+    person.save().then(savedPerson => {
+        response.json(savedPerson.toJSON())
+    })
+    .catch(error => next(error))
 })
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
     Person.find({}).then(persons => {
         response.json(persons)
     })
+    .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    persons = persons.filter(person => person.id != id)
-    response.status(204).end()
+app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndRemove(request.params.id)
+        .then(() => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(person => {
+            if (person) {
+                response.json(person.toJSON())
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
+})
 
-    if (person) {
-        response.json(person)
-    } else {
-        response.status(404).end()
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+    const person = {
+        name: body.name,
+        number: body.number
     }
+    Person.findByIdAndUpdate(request.params.id, person, {new: true})
+        .then(newPerson => {
+            if (newPerson) {
+                response.json(newPerson.toJSON())
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
 })
 
-const unknownEndpoint = (request, response) => {
+const errorHandler = (error, request, response, next) => {
+    console.log(error)
+}
+app.use(errorHandler)
+
+
+const unknownEndpoint = (request, response, next) => {
     response.status(404).send({ error : 'unknown endpoint' })
+    .catch(error => next(error))
 }
 app.use(unknownEndpoint)
 
