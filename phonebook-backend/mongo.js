@@ -11,7 +11,7 @@ const password = process.argv[2]
 const url = `mongodb+srv://Jari:${password}@phoneapp.rfzxi5k.mongodb.net/phoneApp?retryWrites=true&w=majority`
 
 mongoose
-    .connect(url, {useNewUrlParser: true})
+    .connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true})
     .then((result) => {
         console.log('connected')
     })

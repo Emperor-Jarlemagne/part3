@@ -1,10 +1,14 @@
-require('dotenv').config()
-
+if (process.env.NODE_ENV !== 'production') {
+    require("dotenv").config()
+}
+const dotenv = require("dotenv")
+dotenv.config({ path: './.env' })
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
+const path = require("path")
 const Person = require('./models/person')
 
 const requestLogger = (request, response, next) => {
@@ -69,12 +73,12 @@ const generateId = () => {
     ? Math.max(...people.map(p => p.id))
     : 0
     return maxId + 1
-}
-*/
+} */
+
 app.post('/api/persons', (request, response, next) => {
     const body = request.body
     
-    if(!body.name || !body.number) {
+   /* if(!body.name || !body.number) {
         return response.status(400).json({
             error: 'name or number is missing'
         })
@@ -83,10 +87,10 @@ app.post('/api/persons', (request, response, next) => {
         return response.status(400).json({
             error: 'name or number already exists'
         })
-    }
+    } */
 
     const person = new Person({
-//        id: generateId(),
+        id: generateId(),
         name: body.name,
         number: body.number,
         //important: body.important || false,
@@ -130,7 +134,10 @@ app.put('/api/persons/:id', (request, response, next) => {
         name: body.name,
         number: body.number
     }
-    Person.findByIdAndUpdate(request.params.id, person, {new: true})
+    Person.findByIdAndUpdate(
+        request.params.id, 
+        person, 
+        {new: true, runValidators: true, context: 'query'})
         .then(newPerson => {
             if (newPerson) {
                 response.json(newPerson.toJSON())
@@ -142,7 +149,13 @@ app.put('/api/persons/:id', (request, response, next) => {
 })
 
 const errorHandler = (error, request, response, next) => {
-    console.log(error)
+    console.log(error.message)
+    if(error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    }
+    next(error)
 }
 app.use(errorHandler)
 
