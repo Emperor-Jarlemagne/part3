@@ -8,7 +8,7 @@ const app = express()
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
-const path = require("path")
+// const path = require("path")
 const Person = require('./models/person')
 
 const requestLogger = (request, response, next) => {
@@ -20,24 +20,24 @@ const requestLogger = (request, response, next) => {
 }
 
  /* let persons = [
-    { 
+    {
         "id": 1,
-        "name": "Arto Hellas", 
+        "name": "Arto Hellas",
         "number": "040-123456"
       },
-      { 
+      {
         "id": 2,
-        "name": "Ada Lovelace", 
+        "name": "Ada Lovelace",
         "number": "39-44-5323523"
       },
-      { 
+      {
         "id": 3,
-        "name": "Dan Abramov", 
+        "name": "Dan Abramov",
         "number": "12-43-234345"
       },
-      { 
+      {
         "id": 4,
-        "name": "Mary Poppendieck", 
+        "name": "Mary Poppendieck",
         "number": "39-23-6423122"
       }
 ] */
@@ -50,8 +50,8 @@ app.use(express.static('build'))
 
 app.use(bodyParser.json())
 
-morgan.token('body', (request) => { 
-    return JSON.stringify(request.body) 
+morgan.token('body', (request) => {
+    return JSON.stringify(request.body)
 })
 
 app.use(morgan(
@@ -61,7 +61,7 @@ app.use(morgan(
 app.use(cors())
 
 app.get('/info', (request, response, next) => {
-    Person.countDocuments({}).then(result => {
+    Person.countDocuments({}).then((result) => {
         const message = `<h1>Phonebook has info for ${result} people</h1></br><p>${new Date()}</p>`
         response.send(message).end()
     })
@@ -77,8 +77,8 @@ const generateId = () => {
 
 app.post('/api/persons', (request, response, next) => {
     const body = request.body
-    
-   /* if(!body.name || !body.number) {
+
+  /*  if(!body.name || !body.number) {
         return response.status(400).json({
             error: 'name or number is missing'
         })
@@ -90,10 +90,9 @@ app.post('/api/persons', (request, response, next) => {
     } */
 
     const person = new Person({
-        id: generateId(),
+//        id: generateId(),
         name: body.name,
         number: body.number,
-        //important: body.important || false,
     })
     person.save().then(savedPerson => {
         response.json(savedPerson.toJSON())
@@ -102,8 +101,8 @@ app.post('/api/persons', (request, response, next) => {
 })
 
 app.get('/api/persons', (request, response, next) => {
-    Person.find({}).then(persons => {
-        response.json(persons)
+    Person.find({}).then((persons) => {
+        response.status(204).json(persons.map((person) => person.toJSON()))
     })
     .catch(error => next(error))
 })
@@ -118,7 +117,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
-        .then(person => {
+        .then((person) => {
             if (person) {
                 response.json(person.toJSON())
             } else {
@@ -135,12 +134,12 @@ app.put('/api/persons/:id', (request, response, next) => {
         number: body.number
     }
     Person.findByIdAndUpdate(
-        request.params.id, 
-        person, 
-        {new: true, runValidators: true, context: 'query'})
-        .then(newPerson => {
-            if (newPerson) {
-                response.json(newPerson.toJSON())
+        request.params.id,
+        person,
+        { new: true, runValidators: true, context: 'query' })
+        .then(updatedPerson => {
+            if (updatedPerson) {
+                response.json(updatedPerson.toJSON())
             } else {
                 response.status(404).end()
             }
@@ -158,7 +157,6 @@ const errorHandler = (error, request, response, next) => {
     next(error)
 }
 app.use(errorHandler)
-
 
 const unknownEndpoint = (request, response, next) => {
     response.status(404).send({ error : 'unknown endpoint' })

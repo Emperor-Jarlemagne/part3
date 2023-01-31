@@ -10,11 +10,13 @@
     "build:ui": "rm -rf build && cd ../part2/phonebook/ && npm run build && cp -r build ../phonebook-backend",
     "deploy": "flyctl deploy",
     "deploy:full": "npm run build:ui && npm run deploy",
-    "logs:prod": "flyctl logs"
+    "logs:prod": "flyctl logs",
+    "lint": "eslint ."
   },
   "author": "Jari Salminen",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.2.3",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -25,6 +27,8 @@
     "path": "^0.12.7"
   },
   "devDependencies": {
+    "eslint": "^8.32.0",
+    "eslint-plugin-react": "^7.32.1",
     "nodemon": "^2.0.20"
   }
 }

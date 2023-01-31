@@ -5,13 +5,12 @@ const uniqueValidator = require("mongoose-unique-validator")
 //mongoose.set("useFindAndModify", false)
 mongoose.set("strictQuery", false)
 
-const dbName = process.env.MONGODB_URI
+const url = process.env.MONGODB_URI
 
-console.log('farting to', dbName)
+console.log('farting to', url)
 
-
-await mongoose.connect(dbName, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(result => {
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => {
         console.log('Connected to MongoDB')
     })
     .catch((error) => {
@@ -26,7 +25,7 @@ const personSchema = new mongoose.Schema({
     },
     number: {
         type: String,
-        minLength: 8,
+        minlength: 8,
         required: true
     }
 })
