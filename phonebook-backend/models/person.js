@@ -21,12 +21,20 @@ const personSchema = new mongoose.Schema({
     name: {
         type: String,
         minlength: 3,
-        required: true
+        required: true,
+        unique: true,
     },
     number: {
         type: String,
         minlength: 8,
-        required: true
+        required: true,
+        unique: true,
+        match: [
+            /^(\()?\d{3}(\))?(-|\s)?\d{3}(-|\s)\d{4}$/,
+            /^(\()?\d{2}(\))?(-|\s)?\d{4}(-|\s)\d{4}$/,
+            /^(\()?\d{2}(-|\s)\d{7}$/,
+            /^(\()?\d{3}(-|\s)\d{8}$/,
+        ]
     }
 })
 
