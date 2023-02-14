@@ -2,14 +2,20 @@ require('dotenv').config()
 
 const mongoose = require('mongoose')
 const uniqueValidator = require("mongoose-unique-validator")
+const { ServerApiVersion } = require('mongodb')
 //mongoose.set("useFindAndModify", false)
 mongoose.set("strictQuery", false)
 
-const url = process.env.MONGODB_URI
+const uri = process.env.MONGODB_URI
 
-console.log('farting to', url)
+console.log('farting to', uri)
+//const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 })
+//client.connect(err => {
+//    const collection = client.db("test").collection("devices")
+//    client.close()
+//})
 
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 })
     .then(() => {
         console.log('Connected to MongoDB')
     })
