@@ -2,20 +2,14 @@ require('dotenv').config()
 
 const mongoose = require('mongoose')
 const uniqueValidator = require("mongoose-unique-validator")
-const { ServerApiVersion } = require('mongodb')
 //mongoose.set("useFindAndModify", false)
 mongoose.set("strictQuery", false)
 
 const uri = process.env.MONGODB_URI
 
 console.log('farting to', uri)
-//const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 })
-//client.connect(err => {
-//    const collection = client.db("test").collection("devices")
-//    client.close()
-//})
 
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 })
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('Connected to MongoDB')
     })
@@ -33,14 +27,21 @@ const personSchema = new mongoose.Schema({
     number: {
         type: String,
         minlength: 8,
-        required: true,
         unique: true,
- /*       match: [
-            /^(\()?\d{3}(\))?(-|\s)?\d{3}(-|\s)\d{4}$/,
-            /^(\()?\d{2}(\))?(-|\s)?\d{4}(-|\s)\d{4}$/,
-            /^(\()?\d{2}(-|\s)\d{7}$/,
-            /^(\()?\d{3}(-|\s)\d{8}$/,
-        ] */
+        validate: {
+            validator: function(v) {
+                return /^\d{2}-\d{7}$/.test(v) |
+                /^\d{3}-\d{8}$/.test(v) |
+                /^\d{3}-\d{8}$/.test(v) |
+                /^\d{3}-\d{3}-\d{4}$/.test(v) |
+                /\d{8}/.test(v) |
+                /\d{9}/.test(v) |
+                /\d{10}/.test(v) |
+                /\d{11}/.test(v)
+            },
+            message: props => `${props.value} is not a valid string!`
+        },
+        required: [true, 'Number is in Incorrect Format']
     }
 })
 
@@ -50,7 +51,7 @@ personSchema.set('toJSON', {
     transform: (document, returnedObject) => {
         returnedObject.id = returnedObject._id.toString()
         delete returnedObject._id
-        delete returnedObject._v
+        delete returnedObject.__v
     }
 })
 
